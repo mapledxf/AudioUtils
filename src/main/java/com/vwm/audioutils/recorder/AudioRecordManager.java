@@ -35,26 +35,24 @@ public class AudioRecordManager {
             }
         });
 
-        if (permissionHelper.checkPermissions(context,
+        permissionHelper.checkPermissions(context,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.RECORD_AUDIO)) {
-            onReady(sampleRate);
-        }
-
+                Manifest.permission.RECORD_AUDIO);
     }
 
-    public void onReady(int sampleRate) {
+    private void onReady(int sampleRate) {
         Log.d(TAG, "onReady: ");
         recorder = BaseAudioRecord.createAudioRecorder(sampleRate);
+        startRecord();
     }
 
-    public void startRecord() {
+    private void startRecord() {
         Log.d(TAG, "startRecord: ");
         recorder.startRecording();
     }
 
-    public void stopRecord() {
+    private void stopRecord() {
         Log.d(TAG, "stopRecord: ");
         recorder.stopRecording();
     }

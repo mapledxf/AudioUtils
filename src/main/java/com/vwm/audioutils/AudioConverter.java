@@ -1,12 +1,14 @@
 package com.vwm.audioutils;
 
-import android.util.Log;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 
 public class AudioConverter {
+    public static float[] bytesToFloats(byte[] input) {
+        short[] shorts = bytesToShorts(input);
+        return shortsToFloats(shorts);
+    }
+
     public static short[] bytesToShorts(byte[] input) {
         short[] shorts = new short[input.length / 2];
         ByteBuffer.wrap(input).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(shorts);
