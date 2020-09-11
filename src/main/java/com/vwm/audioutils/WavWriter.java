@@ -11,6 +11,7 @@ import java.io.IOException;
  * @author Xuefeng Ding
  * Created 2020-02-26 12:50
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class WavWriter {
     private static final int MAX_WAV_FILES = 100;
     private final int sampleRate;
@@ -18,13 +19,18 @@ public class WavWriter {
     private BufferedOutputStream os;
     private File pcmFile;
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public WavWriter(String uuid, int sampleRate) {
+    /**
+     * Create a wav writer.
+     * @param path path to save to data
+     * @param uuid file name
+     * @param sampleRate sample rate
+     */
+    public WavWriter(String path, String uuid, int sampleRate) {
         this.sampleRate = sampleRate;
         try {
-            File dir = new File("/sdcard/AudioRecord/");
+            File dir = new File(path);
             dir.mkdirs();
-            purgeLogFiles(dir);
+            cleanOldFiles(dir);
 
             pcmFile = new File(dir, uuid + ".pcm");
             pcmFile.createNewFile();
@@ -34,7 +40,7 @@ public class WavWriter {
         }
     }
 
-    private void purgeLogFiles(File wavDir) {
+    private void cleanOldFiles(File wavDir) {
         File[] logFiles = wavDir.listFiles((dir, name) ->
                 "wav".equalsIgnoreCase(name.substring(name.lastIndexOf(".") + 1)));
         long oldestDate = Long.MAX_VALUE;
@@ -54,15 +60,23 @@ public class WavWriter {
         }
     }
 
-    public void write(short[] shorts) {
-        write(AudioConverter.shortsToBytes(shorts));
+    /**
+     * write shorts data into the file
+     * @param shorts short data
+     */
+    public void writePCM(short[] shorts) {
+        writePCM(AudioConverter.shortsToBytes(shorts));
     }
 
-    public void write(byte[] bytes) {
-        write(bytes, bytes.length);
+    /**
+     * write bytes data into the file
+     * @param bytes byte data
+     */
+    public void writePCM(byte[] bytes) {
+        writePCM(bytes, bytes.length);
     }
 
-    public void write(byte[] bytes, int length) {
+    public void writePCM(byte[] bytes, int length) {
         if (os != null) {
             try {
                 os.write(bytes, 0, length);
@@ -72,7 +86,7 @@ public class WavWriter {
         }
     }
 
-    public void save() {
+    public void saveToWav() {
         if (os != null) {
             try {
                 os.flush();

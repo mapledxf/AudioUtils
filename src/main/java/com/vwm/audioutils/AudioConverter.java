@@ -3,6 +3,10 @@ package com.vwm.audioutils;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * @author Xuefeng Ding
+ * Created 2020/9/11
+ */
 public class AudioConverter {
     public static float[] bytesToFloats(byte[] input) {
         short[] shorts = bytesToShorts(input);

@@ -32,7 +32,7 @@ public abstract class BaseAudioRecord {
     BaseAudioRecord(int sampleRate) {
         mStarted = false;
         this.sampleRate = sampleRate;
-        wavWriter = new WavWriter(""+System.currentTimeMillis(), sampleRate);
+        wavWriter = new WavWriter("/sdcard/AudioRecord/", String.valueOf(System.currentTimeMillis()), sampleRate);
     }
 
     /**
@@ -71,7 +71,7 @@ public abstract class BaseAudioRecord {
                 while (!mIsFinished) {
                     int numOfBytes = read(buffer);
                     if (numOfBytes > 0) {
-                        AudioRecordManager.getInstance().onAudioData(buffer, numOfBytes);
+                        AudioRecordManager.getInstance().dispatch(buffer, numOfBytes);
 //                        wavWriter.write(buffer, numOfBytes);
                     }
                 }

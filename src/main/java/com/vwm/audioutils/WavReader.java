@@ -3,7 +3,10 @@ package com.vwm.audioutils;
 import java.io.File;
 import java.io.RandomAccessFile;
 
-
+/**
+ * @author Xuefeng Ding
+ * Created 2020/9/11
+ */
 public class WavReader {
 	private File file;
 	private byte[] header;

@@ -9,6 +9,10 @@ import com.vwm.commonutils.permission.PermissionHelper;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * @author Xuefeng Ding
+ * Created 2020/9/11
+ */
 public class AudioRecordManager {
     private static final String TAG = "AudioRecordManager";
     private static volatile AudioRecordManager instance;
@@ -26,8 +30,13 @@ public class AudioRecordManager {
     }
 
     protected CopyOnWriteArrayList<AudioDataListener> mListeners = new CopyOnWriteArrayList<>();
-    private BaseAudioRecord recorder;
+    private BaseAudioRecord mRecorder;
 
+    /**
+     * init the recorder and start to record.
+     * @param context context
+     * @param sampleRate desired sample rate
+     */
     public void init(Context context, int sampleRate) {
         PermissionHelper permissionHelper = new PermissionHelper(granted -> {
             if (granted) {
@@ -35,7 +44,7 @@ public class AudioRecordManager {
             }
         });
 
-        permissionHelper.checkPermissions(context,
+        permissionHelper.checkPermissions(context.getApplicationContext(),
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.RECORD_AUDIO);
@@ -43,18 +52,18 @@ public class AudioRecordManager {
 
     private void onReady(int sampleRate) {
         Log.d(TAG, "onReady: ");
-        recorder = BaseAudioRecord.createAudioRecorder(sampleRate);
+        mRecorder = BaseAudioRecord.createAudioRecorder(sampleRate);
         startRecord();
     }
 
     private void startRecord() {
         Log.d(TAG, "startRecord: ");
-        recorder.startRecording();
+        mRecorder.startRecording();
     }
 
     private void stopRecord() {
         Log.d(TAG, "stopRecord: ");
-        recorder.stopRecording();
+        mRecorder.stopRecording();
     }
 
     public void release() {
@@ -63,6 +72,10 @@ public class AudioRecordManager {
         mListeners.clear();
     }
 
+    /**
+     * add a audio data listener
+     * @param listener AudioDataListener
+     */
     public void addListener(AudioDataListener listener) {
         if (mListeners.contains(listener)) {
             return;
@@ -71,6 +84,10 @@ public class AudioRecordManager {
         mListeners.add(listener);
     }
 
+    /**
+     * remove the listener
+     * @param listener AudioDataListener
+     */
     public void removeListener(AudioDataListener listener) {
         if (mListeners.contains(listener)) {
             Log.d(TAG, "removeListener: " + listener.getClass());
@@ -78,7 +95,12 @@ public class AudioRecordManager {
         }
     }
 
-    protected void onAudioData(byte[] audioData, int numOfBytes) {
+    /**
+     * Receive the bytes data from recorder and dispatch to listeners.
+     * @param audioData the audio bytes from recorder
+     * @param numOfBytes the number of bytes read from recorder
+     */
+    protected void dispatch(byte[] audioData, int numOfBytes) {
         for (AudioDataListener listener : mListeners) {
             ThreadPoolManager.getInstance().execute(() ->
                     listener.onAudioData(audioData, numOfBytes));

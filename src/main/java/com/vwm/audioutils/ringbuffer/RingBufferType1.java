@@ -1,12 +1,10 @@
-package com.vwm.audioutils;
-
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+package com.vwm.audioutils.ringbuffer;
 
 /**
  * @author Xuefeng Ding
  * Created 2020-02-17 23:49
  */
-public class RingBufferType1 extends RingBuffer {
+class RingBufferType1 extends RingBuffer {
     private int start;
     private int end;
 
@@ -15,24 +13,27 @@ public class RingBufferType1 extends RingBuffer {
         this.start = this.end = 0;
     }
 
-    public boolean put(float[] ar) {
-        if (ar.length > buf.length) {
+    /**
+     * write a segment to buffer
+     * @param slice slice of data
+     * @return true if success
+     */
+    public boolean put(float[] slice) {
+        if (slice.length > buf.length) {
             //空间不够
             return false;
         }
         lock.writeLock().lock();
         try {
             int bufferRemain = buf.length - end;
-            if (ar.length >= bufferRemain) {
-//            Log.d("TESTME", "before put, start:" + start + " end:" + end + " bufferRemain:" + bufferRemain + " ar.length:" + ar.length);
-                start = ar.length - bufferRemain;
-                System.arraycopy(ar, 0, buf, end, bufferRemain);
-                System.arraycopy(ar, bufferRemain, buf, 0, start);
+            if (slice.length >= bufferRemain) {
+                start = slice.length - bufferRemain;
+                System.arraycopy(slice, 0, buf, end, bufferRemain);
+                System.arraycopy(slice, bufferRemain, buf, 0, start);
             } else {
-                System.arraycopy(ar, 0, buf, end, ar.length);
+                System.arraycopy(slice, 0, buf, end, slice.length);
             }
-            end = (end + ar.length) % buf.length;
-//        Log.d("TESTME", "after put, start:" + start + " end:" + end);
+            end = (end + slice.length) % buf.length;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -41,6 +42,10 @@ public class RingBufferType1 extends RingBuffer {
         return true;
     }
 
+    /**
+     * get the whole buffer
+     * @return buffer
+     */
     public float[] get() {
         lock.readLock().lock();
         int len = buf.length;
