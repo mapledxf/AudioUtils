@@ -44,4 +44,8 @@ public abstract class RingBuffer {
      * @return buffer
      */
     public abstract float[] get();
+
+    public void release() {
+        buf = null;
+    }
 }
