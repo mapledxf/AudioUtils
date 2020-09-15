@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.util.Log;
 
-import com.vwm.commonutils.ThreadPoolManager;
 import com.vwm.commonutils.permission.PermissionHelper;
 
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -34,7 +33,8 @@ public class AudioRecordManager {
 
     /**
      * init the recorder and start to record.
-     * @param context context
+     *
+     * @param context    context
      * @param sampleRate desired sample rate
      */
     public void init(Context context, int sampleRate) {
@@ -74,6 +74,7 @@ public class AudioRecordManager {
 
     /**
      * add a audio data listener
+     *
      * @param listener AudioDataListener
      */
     public void addListener(AudioDataListener listener) {
@@ -86,6 +87,7 @@ public class AudioRecordManager {
 
     /**
      * remove the listener
+     *
      * @param listener AudioDataListener
      */
     public void removeListener(AudioDataListener listener) {
@@ -97,13 +99,13 @@ public class AudioRecordManager {
 
     /**
      * Receive the bytes data from recorder and dispatch to listeners.
-     * @param audioData the audio bytes from recorder
+     *
+     * @param audioData  the audio bytes from recorder
      * @param numOfBytes the number of bytes read from recorder
      */
     protected void dispatch(byte[] audioData, int numOfBytes) {
         for (AudioDataListener listener : mListeners) {
-            ThreadPoolManager.getInstance().execute(() ->
-                    listener.onAudioData(audioData, numOfBytes));
+            listener.onAudioData(audioData, numOfBytes);
         }
     }
 }
