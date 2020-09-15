@@ -1,5 +1,6 @@
 package com.vwm.audioutils.recorder;
 
+import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.os.Build;
@@ -23,8 +24,8 @@ public abstract class BaseAudioRecord {
     static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
     private static final int BUFFER_SIZE_MULTIPLIER = 4;
     int sampleRate;
-    private boolean mStarted;
-    private volatile boolean mIsFinished = true;
+    boolean mStarted;
+    volatile boolean mIsFinished = true;
     private final Executor mExecutor = ThreadPoolManager.getInstance().getSingleExecutor(TAG, Thread.MAX_PRIORITY);
 
     private WavWriter wavWriter;
@@ -41,14 +42,14 @@ public abstract class BaseAudioRecord {
      * @param sampleRate record sample rate
      * @return recorder
      */
-    public static BaseAudioRecord createAudioRecorder(int sampleRate) {
+    public static BaseAudioRecord createAudioRecorder(Context context, int sampleRate) {
         if ("Bosch".equalsIgnoreCase(Build.MANUFACTURER)) {
-            return new JettaAudioRecord(sampleRate);
+            return new JettaAudioRecord(context, sampleRate);
         } else if ("freescale".equals(Build.MANUFACTURER)) {
 //            return new NxpAudioRecord();
-            return new NormalAudioRecord(sampleRate);
+            return new DefaultAudioRecord(sampleRate);
         } else {
-            return new NormalAudioRecord(sampleRate);
+            return new DefaultAudioRecord(sampleRate);
         }
     }
 
@@ -60,18 +61,16 @@ public abstract class BaseAudioRecord {
             return;
         }
         mIsFinished = false;
-        int bufferSize = getBufferSize();
-        Log.d(TAG, "startRecording: buffer size " + bufferSize);
 
-        mAudioRecord = createAudioRecord(bufferSize);
+        mAudioRecord = createAudioRecord();
         mExecutor.execute(() -> {
             Log.d(TAG, "startRecording");
             try {
-                byte[] buffer = new byte[bufferSize];
+                byte[] buffer = new byte[getBufferSize()];
                 while (!mIsFinished) {
                     int numOfBytes = read(buffer);
                     if (numOfBytes > 0) {
-                        AudioRecordManager.getInstance().dispatch(buffer, numOfBytes);
+                        onAudioDataReceived(buffer, numOfBytes);
 //                        wavWriter.write(buffer, numOfBytes);
                     }
                 }
@@ -81,7 +80,9 @@ public abstract class BaseAudioRecord {
         });
     }
 
-    protected abstract AudioRecord createAudioRecord(int bufferSize);
+    protected abstract void onAudioDataReceived(byte[] buffer, int numOfBytes);
+
+    protected abstract AudioRecord createAudioRecord();
 
 
     /**

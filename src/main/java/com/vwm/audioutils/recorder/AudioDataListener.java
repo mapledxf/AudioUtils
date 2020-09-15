@@ -10,5 +10,5 @@ public interface AudioDataListener {
      * @param audioData bytes data
      * @param numOfBytes number of bytes
      */
-    public void onAudioData(byte[] audioData, int numOfBytes);
+    void onAudioData(byte[] audioData, int numOfBytes);
 }

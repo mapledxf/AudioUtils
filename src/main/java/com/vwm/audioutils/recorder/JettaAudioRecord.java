@@ -1,60 +1,142 @@
 package com.vwm.audioutils.recorder;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
 
-import java.io.IOException;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-/**
- * Author Xuefeng Ding, Email xfding@vw-mobvoi.com
- * <p>
- * created 2019/4/19 15:27
- */
-class JettaAudioRecord extends BaseAudioRecord {
+public class JettaAudioRecord extends BaseAudioRecord {
+    private static final String ACTION_NEED_TRIGGER_RECORDER = "com.ticauto.voiceengine.TRIGGER_RECORDER";
 
-    JettaAudioRecord(int sampleRate) {
+    private Context mContext;
+    private AudioManager.OnMicFocusChangeListener mListener;
+    private MicLocalBroadcastReceiver mReceiver;
+    private JettaEcnrProcess ecnrProcess;
+    private static final int RECORDER_BUFFER_SIZE = 256000;
+    private static final int AEC_FRAME_LEN = 10;
+    private final int AEC_FRAME_SIZE ;
+
+    public JettaAudioRecord(Context context, int sampleRate) {
         super(sampleRate);
+
+        mContext = context;
+        this.sampleRate = sampleRate;
+        AEC_FRAME_SIZE = sampleRate * AEC_FRAME_LEN * 2 * 8 / 1000;
+        this.ecnrProcess = new JettaEcnrProcess(context);
+
+        mListener = new MicFocusChangeListener();
+        mReceiver = new MicLocalBroadcastReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_NEED_TRIGGER_RECORDER);
+        LocalBroadcastManager.getInstance(mContext).registerReceiver(mReceiver, filter);
     }
 
     @Override
-    protected AudioRecord createAudioRecord(int bufferSize) {
-        AudioRecord ar = new AudioRecord(
-                MediaRecorder.AudioSource.MIC,
-                sampleRate,
-                1020,
-                AUDIO_FORMAT,
-                bufferSize);
+    public void startRecording() {
+        Log.d(TAG, "startRecording");
+        requestMicFocus();
+//        super.startRecording();
+    }
+
+    @Override
+    protected void onAudioDataReceived(byte[] buffer, int numOfBytes) {
+        byte[] ecnr = ecnrProcess.process(buffer, numOfBytes);
+        AudioRecordManager.getInstance().dispatch(ecnr, ecnr.length);
+    }
+
+    @Override
+    public void stopRecording() {
+//        super.stopRecording();
+        Log.d(TAG, "stopRecord");
+        releaseMicFocus();
+    }
+
+    public void requestMicFocus() {
+        releaseMicFocus();
+        Log.d(TAG, "requestMicFocus");
+        final AudioManager am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        am.requestMicFocus(mListener, AudioManager.Audio_SDS);
+
+    }
+
+    public void releaseMicFocus() {
+        Log.d(TAG, "releaseMicFocus");
+        final AudioManager am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        am.MicFocusDestroyed(mListener, AudioManager.Audio_SDS);
+    }
+
+    @Override
+    public AudioRecord createAudioRecord() {
+        AudioRecord ar = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                sampleRate, 1020, AudioFormat.ENCODING_PCM_16BIT,
+                RECORDER_BUFFER_SIZE);
         if (ar.getState() == AudioRecord.STATE_INITIALIZED) {
-            Log.d(TAG, "new AudioRecord SampleRate : " + sampleRate + ", BufferSize : " + bufferSize);
+            Log.d(TAG, "new AudioRecord SampleRate : " + sampleRate + ", BufferSize :" + RECORDER_BUFFER_SIZE);
             return ar;
         } else {
             ar.release();
-            Log.e(TAG, "AudioRecord failed to initialize: " + ar.getState());
+            Log.e(TAG, "AudioRecord failed to initialize");
             return null;
         }
     }
 
-    @Override
-    int read(byte[] buffer) throws IOException {
-        byte[] raw = new byte[buffer.length];
-        int length = super.read(raw);
-        return split(raw, length, buffer);
+    private class MicFocusChangeListener implements AudioManager.OnMicFocusChangeListener {
+
+        @Override
+        public void release() {
+            Log.i(TAG, "AudioMicListener  release DONE ");
+        }
+
+        /**
+         * Mic focus change callback
+         *
+         * @param focusChange 1 AudioManager.MIC_REQ_GAIN: Apply focus to success or regain focus
+         *                    2 AudioManager.MIC_REQ_FAILED: Application focus failed
+         *                    3 AudioManager.MIC_REQ_LOSS: Lose focus
+         */
+        @Override
+        public void onMicFocusChange(int focusChange) {
+            Log.i(TAG, "onMicFocusChange focusChange:" + focusChange + ", mIsNeedRecording:" + mIsFinished);
+            switch (focusChange) {
+                case AudioManager.MIC_REQ_GAIN:
+                    JettaAudioRecord.super.startRecording();
+                    break;
+                case AudioManager.MIC_REQ_FAILED:
+                case AudioManager.MIC_REQ_LOSS:
+                default:
+                    JettaAudioRecord.super.stopRecording();
+                    Log.e(TAG, "onMicFocusChange - current SDS no mic focus, stop record");
+                    break;
+            }
+        }
     }
 
-    private int split(byte[] raw, int length, byte[] buff) {
-        int out = 0;
-        int in = 0;
-        while (in < length) {
-            buff[out] = raw[in + 1];
-            in += 8;
-            out++;
+    private class MicLocalBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive - intent : " + intent + ", mIsFinished : " + mIsFinished + ", mStarted : " + mStarted);
+            if (ACTION_NEED_TRIGGER_RECORDER.equals(intent.getAction())) {
+                if (!mIsFinished) {
+                    if (mStarted) {
+                        requestMicFocus();
+                    }
+                } else {
+                    Log.e(TAG, "ACTION_NEED_TRIGGER_RECORDER - user trigger voice but record stopped by other app");
+                }
+            }
         }
-        return out;
     }
 
     @Override
     int getBufferSize() {
-        return super.getBufferSize() * 8;
+        return AEC_FRAME_SIZE;
     }
 }

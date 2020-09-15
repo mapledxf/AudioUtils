@@ -1,4 +1,4 @@
-*/.cxx/
+.cxx/
 dsp/*externalNativeBuild
 tinyrec/*externalNativeBuild
 dsp/*externalNativeBuild

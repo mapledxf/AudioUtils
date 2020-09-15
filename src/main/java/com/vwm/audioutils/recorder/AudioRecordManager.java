@@ -7,6 +7,7 @@ import android.util.Log;
 import com.vwm.commonutils.permission.PermissionHelper;
 
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author Xuefeng Ding
@@ -30,6 +31,7 @@ public class AudioRecordManager {
 
     protected CopyOnWriteArrayList<AudioDataListener> mListeners = new CopyOnWriteArrayList<>();
     private BaseAudioRecord mRecorder;
+    private CountDownLatch latch = new CountDownLatch(1);
 
     /**
      * init the recorder and start to record.
@@ -40,19 +42,26 @@ public class AudioRecordManager {
     public void init(Context context, int sampleRate) {
         PermissionHelper permissionHelper = new PermissionHelper(granted -> {
             if (granted) {
-                onReady(sampleRate);
+                onReady(context, sampleRate);
+                latch.countDown();
             }
         });
 
         permissionHelper.checkPermissions(context.getApplicationContext(),
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                Manifest.permission.READ_EXTERNAL_STORAGE,
+//                Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.RECORD_AUDIO);
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Log.d(TAG, "init success ");
     }
 
-    private void onReady(int sampleRate) {
+    private void onReady(Context context, int sampleRate) {
         Log.d(TAG, "onReady: ");
-        mRecorder = BaseAudioRecord.createAudioRecorder(sampleRate);
+        mRecorder = BaseAudioRecord.createAudioRecorder(context, sampleRate);
         startRecord();
     }
 
