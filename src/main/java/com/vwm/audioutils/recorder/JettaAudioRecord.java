@@ -12,6 +12,8 @@ import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.vwm.audioutils.AudioWriter;
+
 public class JettaAudioRecord extends BaseAudioRecord {
     private static final String ACTION_NEED_TRIGGER_RECORDER = "com.ticauto.voiceengine.TRIGGER_RECORDER";
 
@@ -21,11 +23,18 @@ public class JettaAudioRecord extends BaseAudioRecord {
     private JettaEcnrProcess ecnrProcess;
     private static final int RECORDER_BUFFER_SIZE = 256000;
     private static final int AEC_FRAME_LEN = 10;
-    private final int AEC_FRAME_SIZE ;
+    private final int AEC_FRAME_SIZE;
 
-    public JettaAudioRecord(Context context, int sampleRate) {
+    private AudioWriter oriWriter;
+    private AudioWriter ecnrWriter;
+
+    public JettaAudioRecord(Context context, int sampleRate, boolean dump) {
         super(sampleRate);
 
+        if (dump) {
+            oriWriter = new AudioWriter("/sdcard/dump", "ori", 16000);
+            ecnrWriter = new AudioWriter("/sdcard/dump", "ecnr", 16000);
+        }
         mContext = context;
         this.sampleRate = sampleRate;
         AEC_FRAME_SIZE = sampleRate * AEC_FRAME_LEN * 2 * 8 / 1000;
@@ -47,7 +56,13 @@ public class JettaAudioRecord extends BaseAudioRecord {
 
     @Override
     protected void onAudioDataReceived(byte[] buffer, int numOfBytes) {
+        if (oriWriter != null) {
+            oriWriter.writePCM(buffer);
+        }
         byte[] ecnr = ecnrProcess.process(buffer, numOfBytes);
+        if (ecnrWriter != null) {
+            ecnrWriter.writePCM(ecnr);
+        }
         AudioRecordManager.getInstance().dispatch(ecnr, ecnr.length);
     }
 

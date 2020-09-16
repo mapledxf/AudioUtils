@@ -39,17 +39,17 @@ public class AudioRecordManager {
      * @param context    context
      * @param sampleRate desired sample rate
      */
-    public void init(Context context, int sampleRate) {
+    public void init(Context context, int sampleRate, boolean dump) {
         PermissionHelper permissionHelper = new PermissionHelper(granted -> {
             if (granted) {
-                onReady(context, sampleRate);
+                onReady(context, sampleRate, dump);
                 latch.countDown();
             }
         });
 
         permissionHelper.checkPermissions(context.getApplicationContext(),
-//                Manifest.permission.READ_EXTERNAL_STORAGE,
-//                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.RECORD_AUDIO);
         try {
             latch.await();
@@ -59,20 +59,27 @@ public class AudioRecordManager {
         Log.d(TAG, "init success ");
     }
 
-    private void onReady(Context context, int sampleRate) {
+    private void onReady(Context context, int sampleRate, boolean dump) {
         Log.d(TAG, "onReady: ");
-        mRecorder = BaseAudioRecord.createAudioRecorder(context, sampleRate);
-        startRecord();
+        mRecorder = BaseAudioRecord.createAudioRecorder(context, sampleRate, dump);
     }
 
-    private void startRecord() {
-        Log.d(TAG, "startRecord: ");
-        mRecorder.startRecording();
+    public void startRecord() {
+        if (mRecorder == null) {
+            Log.e(TAG, "startRecord: call init first");
+        } else {
+            Log.d(TAG, "startRecord: ");
+            mRecorder.startRecording();
+        }
     }
 
-    private void stopRecord() {
-        Log.d(TAG, "stopRecord: ");
-        mRecorder.stopRecording();
+    public void stopRecord() {
+        if (mRecorder == null) {
+            Log.e(TAG, "stopRecord: call init first");
+        } else {
+            Log.d(TAG, "stopRecord: ");
+            mRecorder.stopRecording();
+        }
     }
 
     public void release() {

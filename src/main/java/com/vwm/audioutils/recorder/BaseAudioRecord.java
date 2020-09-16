@@ -7,7 +7,6 @@ import android.os.Build;
 import android.util.Log;
 
 import com.vwm.commonutils.ThreadPoolManager;
-import com.vwm.audioutils.WavWriter;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -28,12 +27,9 @@ public abstract class BaseAudioRecord {
     volatile boolean mIsFinished = true;
     private final Executor mExecutor = ThreadPoolManager.getInstance().getSingleExecutor(TAG, Thread.MAX_PRIORITY);
 
-    private WavWriter wavWriter;
-
     BaseAudioRecord(int sampleRate) {
         mStarted = false;
         this.sampleRate = sampleRate;
-        wavWriter = new WavWriter("/sdcard/AudioRecord/", String.valueOf(System.currentTimeMillis()), sampleRate);
     }
 
     /**
@@ -42,14 +38,14 @@ public abstract class BaseAudioRecord {
      * @param sampleRate record sample rate
      * @return recorder
      */
-    public static BaseAudioRecord createAudioRecorder(Context context, int sampleRate) {
+    public static BaseAudioRecord createAudioRecorder(Context context, int sampleRate, boolean dump) {
         if ("Bosch".equalsIgnoreCase(Build.MANUFACTURER)) {
-            return new JettaAudioRecord(context, sampleRate);
+            return new JettaAudioRecord(context, sampleRate, dump);
         } else if ("freescale".equals(Build.MANUFACTURER)) {
 //            return new NxpAudioRecord();
-            return new DefaultAudioRecord(sampleRate);
+            return new DefaultAudioRecord(sampleRate, dump);
         } else {
-            return new DefaultAudioRecord(sampleRate);
+            return new DefaultAudioRecord(sampleRate, dump);
         }
     }
 

@@ -12,7 +12,7 @@ import java.io.IOException;
  * Created 2020-02-26 12:50
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
-public class WavWriter {
+public class AudioWriter {
     private static final int MAX_WAV_FILES = 100;
     private final int sampleRate;
 
@@ -25,7 +25,7 @@ public class WavWriter {
      * @param uuid file name
      * @param sampleRate sample rate
      */
-    public WavWriter(String path, String uuid, int sampleRate) {
+    public AudioWriter(String path, String uuid, int sampleRate) {
         this.sampleRate = sampleRate;
         try {
             File dir = new File(path);
@@ -33,6 +33,9 @@ public class WavWriter {
             cleanOldFiles(dir);
 
             pcmFile = new File(dir, uuid + ".pcm");
+            if (pcmFile.exists()) {
+                pcmFile.delete();
+            }
             pcmFile.createNewFile();
             os = new BufferedOutputStream(new FileOutputStream(pcmFile));
         } catch (Exception e) {
@@ -41,16 +44,19 @@ public class WavWriter {
     }
 
     private void cleanOldFiles(File wavDir) {
-        File[] logFiles = wavDir.listFiles((dir, name) ->
-                "wav".equalsIgnoreCase(name.substring(name.lastIndexOf(".") + 1)));
+        File[] logFiles = wavDir.listFiles();
         long oldestDate = Long.MAX_VALUE;
         File oldestFile = null;
         if (logFiles != null && logFiles.length > MAX_WAV_FILES) {
-            //delete oldest files after theres more than 500 log files
+            //delete oldest files after theres more than 100 log files
             for (File f : logFiles) {
-                if (f.lastModified() < oldestDate) {
-                    oldestDate = f.lastModified();
-                    oldestFile = f;
+                if (f.getName().toLowerCase().endsWith(".wav")) {
+                    if (f.lastModified() < oldestDate) {
+                        oldestDate = f.lastModified();
+                        oldestFile = f;
+                    }
+                } else {
+                    f.delete();
                 }
             }
 
@@ -96,7 +102,7 @@ public class WavWriter {
             }
         }
         convertWaveFile(pcmFile.getAbsolutePath(), pcmFile.getAbsolutePath() + ".wav");
-        pcmFile.delete();
+//        pcmFile.delete();
     }
 
 

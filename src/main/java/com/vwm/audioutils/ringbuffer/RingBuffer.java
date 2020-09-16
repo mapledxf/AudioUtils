@@ -7,7 +7,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Created 2020-02-17 23:49
  */
 public abstract class RingBuffer {
-    float[] buf;
+    static volatile float[] buf;
     ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
@@ -45,7 +45,4 @@ public abstract class RingBuffer {
      */
     public abstract float[] get();
 
-    public void release() {
-        buf = null;
-    }
 }

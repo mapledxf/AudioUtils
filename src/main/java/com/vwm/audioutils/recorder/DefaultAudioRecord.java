@@ -19,7 +19,7 @@ class DefaultAudioRecord extends BaseAudioRecord {
     private AutomaticGainControl mAutomaticGainControl;
     private AcousticEchoCanceler mAcousticEchoCanceler;
 
-    DefaultAudioRecord(int sampleRate) {
+    DefaultAudioRecord(int sampleRate, boolean dump) {
         super(sampleRate);
     }
 

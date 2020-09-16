@@ -15,19 +15,20 @@ class RingBufferType2 extends RingBuffer {
 
     /**
      * write a segment to buffer
+     *
      * @param slice slice of data
      * @return true if success
      */
     public boolean put(float[] slice) {
-        int maxLength = buf.length;
-        int newRecordingOffset = recordingOffset + slice.length;
-        int secondCopyLength = Math.max(0, newRecordingOffset - maxLength);
-        int firstCopyLength = slice.length - secondCopyLength;
         // We store off all the data for the recognition thread to access. The ML
         // thread will copy out of this buffer into its own, while holding the
         // lock, so this should be thread safe.
-        lock.writeLock().lock();
         try {
+            lock.writeLock().lock();
+            int maxLength = buf.length;
+            int newRecordingOffset = recordingOffset + slice.length;
+            int secondCopyLength = Math.max(0, newRecordingOffset - maxLength);
+            int firstCopyLength = slice.length - secondCopyLength;
             System.arraycopy(slice, 0, buf, recordingOffset, firstCopyLength);
             System.arraycopy(slice, firstCopyLength, buf, 0, secondCopyLength);
             recordingOffset = newRecordingOffset % maxLength;
@@ -39,6 +40,7 @@ class RingBufferType2 extends RingBuffer {
 
     /**
      * get the whole buffer
+     *
      * @return buffer
      */
     public float[] get() {
