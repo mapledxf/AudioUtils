@@ -61,7 +61,7 @@ public abstract class BaseAudioRecord {
         mExecutor.execute(() -> {
             Log.d(TAG, "startRecording");
             try {
-                byte[] buffer = new byte[getBufferSize()];
+                byte[] buffer = new byte[getBufferSize()/2];
                 while (!mIsFinished) {
                     int numOfBytes = read(buffer);
                     if (numOfBytes > 0) {

@@ -30,9 +30,9 @@ class DefaultAudioRecord extends BaseAudioRecord {
 
     @Override
     protected AudioRecord createAudioRecord() {
-        int bufferSize = getBufferSize();
+        int bufferSize = getBufferSize() * 2;
         AudioRecord ar = new AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION,
-                sampleRate, CHANNEL, AUDIO_FORMAT, bufferSize * 2);
+                sampleRate, CHANNEL, AUDIO_FORMAT, bufferSize);
         if (ar.getState() == AudioRecord.STATE_INITIALIZED) {
             Log.d(TAG, "new AudioRecord SampleRate : " + sampleRate + ", BufferSize : " + bufferSize);
             setEffect(ar.getAudioSessionId());
