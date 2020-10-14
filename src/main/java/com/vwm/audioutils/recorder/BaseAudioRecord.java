@@ -21,7 +21,6 @@ public abstract class BaseAudioRecord {
 
     static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
     static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
-    private static final int BUFFER_SIZE_MULTIPLIER = 4;
     int sampleRate;
     boolean mStarted;
     volatile boolean mIsFinished = true;
@@ -96,13 +95,14 @@ public abstract class BaseAudioRecord {
     }
 
     int getBufferSize() {
-        int minBufferSizeInBytes = AudioRecord.getMinBufferSize(sampleRate, CHANNEL, AUDIO_FORMAT);
-        if (minBufferSizeInBytes == AudioRecord.ERROR_BAD_VALUE || minBufferSizeInBytes == AudioRecord.ERROR) {
-            throw new IllegalArgumentException("SpeechRecord.getMinBufferSize: parameters not supported by hardware");
-        }
-        int bufferSize = BUFFER_SIZE_MULTIPLIER * minBufferSizeInBytes;
-        Log.i(TAG, "SpeechRecord buffer size: " + bufferSize + ", min size = " + minBufferSizeInBytes);
-        return bufferSize;
+//        int minBufferSizeInBytes = AudioRecord.getMinBufferSize(sampleRate, CHANNEL, AUDIO_FORMAT);
+//        if (minBufferSizeInBytes == AudioRecord.ERROR_BAD_VALUE || minBufferSizeInBytes == AudioRecord.ERROR) {
+//            throw new IllegalArgumentException("SpeechRecord.getMinBufferSize: parameters not supported by hardware");
+//        }
+//        int bufferSize = BUFFER_SIZE_MULTIPLIER * minBufferSizeInBytes;
+//        Log.i(TAG, "SpeechRecord buffer size: " + bufferSize + ", min size = " + minBufferSizeInBytes);
+//        return 2560;
+        return Math.round((float)this.sampleRate * 0.4F);
     }
 
     private AudioRecord ensureStartedLocked() throws IOException {

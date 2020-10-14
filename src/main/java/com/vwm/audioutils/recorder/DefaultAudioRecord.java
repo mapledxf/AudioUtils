@@ -32,7 +32,7 @@ class DefaultAudioRecord extends BaseAudioRecord {
     protected AudioRecord createAudioRecord() {
         int bufferSize = getBufferSize();
         AudioRecord ar = new AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION,
-                sampleRate, CHANNEL, AUDIO_FORMAT, bufferSize);
+                sampleRate, CHANNEL, AUDIO_FORMAT, bufferSize * 2);
         if (ar.getState() == AudioRecord.STATE_INITIALIZED) {
             Log.d(TAG, "new AudioRecord SampleRate : " + sampleRate + ", BufferSize : " + bufferSize);
             setEffect(ar.getAudioSessionId());
@@ -84,7 +84,6 @@ class DefaultAudioRecord extends BaseAudioRecord {
     }
 
     @Override
-    @SuppressWarnings("unused")
     public void stopRecording() {
         super.stopRecording();
 
