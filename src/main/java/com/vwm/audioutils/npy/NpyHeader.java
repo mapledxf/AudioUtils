@@ -5,7 +5,7 @@ import com.google.gson.JsonParser;
 
 public class NpyHeader {
 	String descr;
-	boolean isFortranOrder = false;
+	boolean isFortranOrder;
 	DataType dataType;
 	Endian endian;
 	int[] shape;
@@ -30,17 +30,14 @@ public class NpyHeader {
 		str = str.replace(": (", ": '(");
 		str = str.replace(")}", ")'}");
 		
-		JsonParser jsonParser = new JsonParser();
-		JsonElement element = jsonParser.parse(str);
+		JsonElement element = JsonParser.parseString(str);
 		
 		JsonObject headerInfo = element.getAsJsonObject();
 		
-		String descr = headerInfo.get("descr").getAsString();
 		boolean isFortranOrder = headerInfo.get("fortran_order").getAsBoolean();
 		String shapeString = headerInfo.get("shape").getAsString();
-		
-		
-		return new NpyHeader(descr, isFortranOrder, getShape(shapeString));
+
+		return new NpyHeader(headerInfo.get("descr").getAsString(), isFortranOrder, getShape(shapeString));
 	}
 	
 	public NpyHeader(String descr, boolean isFortranOrder, int[] shape) {
