@@ -12,31 +12,9 @@ android {
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "androidx.tfe_sc_activity_speech.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
 
-        externalNativeBuild {
-            cmake {
-                cppFlags "-frtti -fexceptions"
-            }
-        }
 
-        ndk {
-            abiFilters = []
-            abiFilters.addAll(ABI_FILTERS.split(";").collect { it as String })
-        }
-    }
-
-    gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            options.compilerArgs << '-Xbootclasspath/p:AudioUtils/libs/framework.jar'
-        }
-    }
-
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
-        }
     }
 
     buildTypes {
@@ -52,31 +30,9 @@ android {
     }
 }
 
-preBuild {
-    doLast {
-        def iml = '' + project.rootDir + '/.idea/modules/' + project.name +'/' + project.name + '.iml'
-        def imlFile = file(iml)
-        println 'Change ' + iml + '.iml order'
-        try {
-            def parsedXml = (new XmlParser()).parse(imlFile)
-            def jdkNode = parsedXml.component[1].orderEntry.find { it.'@type' == 'jdk' }
-            parsedXml.component[1].remove(jdkNode)
-            def sdkString = "Android API " + android.compileSdkVersion.substring("android-".length()) + " Platform"
-            //noinspection GroovyResultOfObjectAllocationIgnored
-            new Node(parsedXml.component[1], 'orderEntry', ['type': 'jdk', 'jdkName': sdkString, 'jdkType': 'Android SDK'])
-            XmlUtil.serialize(parsedXml, new FileOutputStream(imlFile))
-        } catch (FileNotFoundException e) {
-            println e
-        }
-    }
-}
-
 dependencies {
-//    implementation fileTree(dir: "libs", include: ["*.jar"])
-    compileOnly files('libs/framework.jar')
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+
     implementation project(path: ':CommonUtils')
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 
 }
