@@ -8,6 +8,9 @@ import java.nio.ByteOrder;
  * Created 2020/9/11
  */
 public class AudioConverter {
+    private AudioConverter() {
+    }
+
     public static float[] bytesToFloats(byte[] input) {
         short[] shorts = bytesToShorts(input);
         return shortsToFloats(shorts);

@@ -1,10 +1,14 @@
 package com.vwm.audioutils.ringbuffer;
 
+import android.util.Log;
+
 /**
  * @author Xuefeng Ding
  * Created 2020-02-17 23:49
  */
-class RingBufferType1 extends RingBuffer {
+class RingBufferType1 extends BaseRingBuffer {
+    private static final String TAG = "RingBufferType1";
+
     private int start;
     private int end;
 
@@ -18,6 +22,7 @@ class RingBufferType1 extends RingBuffer {
      * @param slice slice of data
      * @return true if success
      */
+    @Override
     public boolean put(float[] slice) {
         if (slice.length > buf.length) {
             //空间不够
@@ -35,6 +40,7 @@ class RingBufferType1 extends RingBuffer {
             }
             end = (end + slice.length) % buf.length;
         } catch (Exception e) {
+            Log.e(TAG, "put: ", e);
             e.printStackTrace();
         } finally {
             lock.writeLock().unlock();
@@ -46,6 +52,7 @@ class RingBufferType1 extends RingBuffer {
      * get the whole buffer
      * @return buffer
      */
+    @Override
     public float[] get() {
         lock.readLock().lock();
         int len = buf.length;
@@ -56,7 +63,7 @@ class RingBufferType1 extends RingBuffer {
                 System.arraycopy(buf, 0, arr, len - start, start);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "get: ", e);
         } finally {
             lock.readLock().unlock();
         }

@@ -3,23 +3,29 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+/**
+ * @author Xuefeng Ding
+ * Created 2020/11/9
+ */
 public class NpyHeader {
-	String descr;
-	boolean isFortranOrder;
-	DataType dataType;
-	Endian endian;
-	int[] shape;
-	
+	private String descr;
+	private boolean isFortranOrder;
+	private DataType dataType;
+	private Endian endian;
+	private int[] shape;
+
 	public static int[] getShape(String shapeString) {
-		shapeString = shapeString.replace("(", "");
-		shapeString = shapeString.replace(" ", "");
-		shapeString = shapeString.replace(")", "");
+		String tmp = shapeString;
+		tmp = tmp.replace("(", "");
+		tmp = tmp.replace(" ", "");
+		tmp = tmp.replace(")", "");
 		
-		String[] arr = shapeString.split(",");
+		String[] arr = tmp.split(",");
 		
 		int[] result = new int[arr.length];
-		for (int i = 0; i < arr.length; i++)
+		for (int i = 0; i < arr.length; i++) {
 			result[i] = Integer.parseInt(arr[i]);
+		}
 		
 		return result;
 	}
@@ -43,7 +49,7 @@ public class NpyHeader {
 	public NpyHeader(String descr, boolean isFortranOrder, int[] shape) {
 		this.descr = descr;
 		this.isFortranOrder = isFortranOrder;
-		this.shape = shape;
+		this.shape = shape.clone();
 		
 		String endianString = descr.substring(0, 1);
 		String typeString = descr.substring(1);
@@ -62,6 +68,24 @@ public class NpyHeader {
 			}
 		}
 	}
-	
-	
+
+	public String getDescription() {
+		return this.descr;
+	}
+
+	public boolean isFortranOrder() {
+		return this.isFortranOrder;
+	}
+
+	public String getDataType() {
+		return this.dataType.toString();
+	}
+
+	public String getEndian() {
+		return this.endian.toString();
+	}
+
+	public int[] getShape() {
+		return this.shape;
+	}
 }

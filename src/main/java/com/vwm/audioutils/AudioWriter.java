@@ -1,5 +1,7 @@
 package com.vwm.audioutils;
 
+import android.util.Log;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,8 +15,9 @@ import java.io.IOException;
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class AudioWriter {
+    private  String TAG;
     private static final int MAX_WAV_FILES = 100;
-    private final int sampleRate;
+    private final int sr;
 
     private BufferedOutputStream os;
     private File pcmFile;
@@ -25,8 +28,9 @@ public class AudioWriter {
      * @param uuid file name
      * @param sampleRate sample rate
      */
-    public AudioWriter(String path, String uuid, int sampleRate) {
-        this.sampleRate = sampleRate;
+    public AudioWriter(String logPrefix, String path, String uuid, int sampleRate) {
+        TAG = logPrefix + getClass().getSimpleName();
+        this.sr = sampleRate;
         try {
             File dir = new File(path);
             dir.mkdirs();
@@ -39,6 +43,7 @@ public class AudioWriter {
             pcmFile.createNewFile();
             os = new BufferedOutputStream(new FileOutputStream(pcmFile));
         } catch (Exception e) {
+            Log.e(TAG, "AudioWriter: ", e);
             e.printStackTrace();
         }
     }
@@ -70,24 +75,24 @@ public class AudioWriter {
      * write shorts data into the file
      * @param shorts short data
      */
-    public void writePCM(short[] shorts) {
-        writePCM(AudioConverter.shortsToBytes(shorts));
+    public void writePcm(short[] shorts) {
+        writePcm(AudioConverter.shortsToBytes(shorts));
     }
 
     /**
      * write bytes data into the file
      * @param bytes byte data
      */
-    public void writePCM(byte[] bytes) {
-        writePCM(bytes, bytes.length);
+    public void writePcm(byte[] bytes) {
+        writePcm(bytes, bytes.length);
     }
 
-    public void writePCM(byte[] bytes, int length) {
+    public void writePcm(byte[] bytes, int length) {
         if (os != null) {
             try {
                 os.write(bytes, 0, length);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e(TAG, "writePcm: ", e);
             }
         }
     }
@@ -98,7 +103,7 @@ public class AudioWriter {
                 os.flush();
                 os.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(TAG, "saveToWav: ", e);
             }
         }
         convertWaveFile(pcmFile.getAbsolutePath(), pcmFile.getAbsolutePath() + ".wav");
@@ -112,7 +117,7 @@ public class AudioWriter {
         long totalAudioLen;
         long totalDataLen;
         int channels = 1;
-        long byteRate = 16 * sampleRate * channels / 8;
+        long byteRate = 16 * sr * channels / 8;
         byte[] data = new byte[512];
         try {
             in = new FileInputStream(pcm);
@@ -120,15 +125,17 @@ public class AudioWriter {
             totalAudioLen = in.getChannel().size();
             //由于不包括RIFF和WAV
             totalDataLen = totalAudioLen + 36;
-            writeWaveFileHeader(out, totalAudioLen, totalDataLen, (long) sampleRate, channels, byteRate);
+            writeWaveFileHeader(out, totalAudioLen, totalDataLen, (long) sr, channels, byteRate);
             while (in.read(data) != -1) {
                 out.write(data);
             }
             in.close();
             out.close();
         } catch (FileNotFoundException e) {
+            Log.e(TAG, "convertWaveFile: ", e);
             e.printStackTrace();
         } catch (IOException e) {
+            Log.e(TAG, "convertWaveFile: ", e);
             e.printStackTrace();
         }
     }
@@ -137,20 +144,24 @@ public class AudioWriter {
     private void writeWaveFileHeader(FileOutputStream out, long totalAudioLen, long totalDataLen, long longSampleRate,
                                      int channels, long byteRate) throws IOException {
         byte[] header = new byte[44];
-        header[0] = 'R'; // RIFF
+        // RIFF
+        header[0] = 'R';
         header[1] = 'I';
         header[2] = 'F';
         header[3] = 'F';
-        header[4] = (byte) (totalDataLen & 0xff);//数据大小
+        //数据大小
+        header[4] = (byte) (totalDataLen & 0xff);
         header[5] = (byte) ((totalDataLen >> 8) & 0xff);
         header[6] = (byte) ((totalDataLen >> 16) & 0xff);
         header[7] = (byte) ((totalDataLen >> 24) & 0xff);
-        header[8] = 'W';//WAVE
+        //WAVE
+        header[8] = 'W';
         header[9] = 'A';
         header[10] = 'V';
         header[11] = 'E';
         //FMT Chunk
-        header[12] = 'f'; // 'fmt '
+        // 'fmt '
+        header[12] = 'f';
         header[13] = 'm';
         header[14] = 't';
         header[15] = ' ';//过渡字节

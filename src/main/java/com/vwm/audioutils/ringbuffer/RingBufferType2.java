@@ -4,7 +4,7 @@ package com.vwm.audioutils.ringbuffer;
  * @author Xuefeng Ding
  * Created 2020-02-17 23:49
  */
-class RingBufferType2 extends RingBuffer {
+class RingBufferType2 extends BaseRingBuffer {
     private int recordingOffset = 0;
     private float[] inputBuffer;
 
@@ -19,6 +19,7 @@ class RingBufferType2 extends RingBuffer {
      * @param slice slice of data
      * @return true if success
      */
+    @Override
     public boolean put(float[] slice) {
         // We store off all the data for the recognition thread to access. The ML
         // thread will copy out of this buffer into its own, while holding the
@@ -43,6 +44,7 @@ class RingBufferType2 extends RingBuffer {
      *
      * @return buffer
      */
+    @Override
     public float[] get() {
         lock.readLock().lock();
         try {

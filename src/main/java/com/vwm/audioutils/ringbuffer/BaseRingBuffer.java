@@ -6,7 +6,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author Xuefeng Ding
  * Created 2020-02-17 23:49
  */
-public abstract class RingBuffer {
+public abstract class BaseRingBuffer {
     static volatile float[] buf;
     ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -15,7 +15,7 @@ public abstract class RingBuffer {
      * @param length buffer size
      * @return RingBufferType1
      */
-    public static RingBuffer createType1(int length) {
+    public static BaseRingBuffer createType1(int length) {
         return new RingBufferType1(length);
     }
 
@@ -24,11 +24,11 @@ public abstract class RingBuffer {
      * @param length buffer size
      * @return RingBufferType2
      */
-    public static RingBuffer createType2(int length) {
+    public static BaseRingBuffer createType2(int length) {
         return new RingBufferType2(length);
     }
 
-    RingBuffer(int length) {//构造函数定义缓冲区的大小
+    BaseRingBuffer(int length) {//构造函数定义缓冲区的大小
         buf = new float[length];
     }
 

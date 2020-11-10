@@ -1,5 +1,7 @@
 package com.vwm.audioutils;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.RandomAccessFile;
 
@@ -8,12 +10,12 @@ import java.io.RandomAccessFile;
  * Created 2020/9/11
  */
 public class WavReader {
+	private static final String TAG = "WavReader";
 	private File file;
 	private byte[] header;
 	private short[] samples;
-	public int maxSample;
 	//this is the absolute value maximum so it considers the most negative sample aswell
-	public int maxAbsoluteSample;
+	private int maxAbsoluteSample;
 
 	public WavReader(String path) {
 		this.file = new File(path);
@@ -79,7 +81,6 @@ public class WavReader {
 			if (absoluteMax < Math.abs(samples[samplesIndex])) {
 				absoluteMax = Math.abs(samples[samplesIndex]);
 			}
-			this.maxSample = max;
 			this.maxAbsoluteSample = absoluteMax;
 			samplesIndex++;
 		}
@@ -117,6 +118,7 @@ public class WavReader {
 			randomAccess.seek(offset);
 			randomAccess.read(data, 0, numBytes);
 		} catch (Exception e) {
+			Log.e(TAG, "readFile: ", e);
 			e.printStackTrace();
 		}
 		return data;

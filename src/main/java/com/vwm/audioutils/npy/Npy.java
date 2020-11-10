@@ -7,6 +7,10 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * @author Xuefeng Ding
+ * Created 2020/11/9
+ */
 public class Npy {
 	private byte[] data = null;
 	private NpyHeader header;
@@ -29,7 +33,7 @@ public class Npy {
 		dataIs.readFully(allData);
 		dataIs.close();
 		String magic = new String(allData, 1, 5);
-		if (!magic.equals("NUMPY") || (allData[0] & 0xFF) != 0x93) {
+		if (!"NUMPY".equals(magic) || (allData[0] & 0xFF) != 0x93) {
 			throw new IOException("Invalid prefix");
 		}
 
@@ -40,8 +44,9 @@ public class Npy {
 			throw new IOException("Invalid jaor version: " + major);
 		}
 
-		if (minor != 0)
+		if (minor != 0) {
 			throw new IOException("Invalid minor version: " + minor);
+		}
 
 		int headerLen;
 		int offset;
