@@ -77,12 +77,12 @@ public class NpyHeader {
 		return this.isFortranOrder;
 	}
 
-	public String getDataType() {
-		return this.dataType.toString();
+	public DataType getDataType() {
+		return this.dataType;
 	}
 
-	public String getEndian() {
-		return this.endian.toString();
+	public Endian getEndian() {
+		return this.endian;
 	}
 
 	public int[] getShape() {

@@ -79,15 +79,15 @@ public class Npy {
 	}
 	
 	public boolean getIsFortranOrder() {
-		return header.isFortranOrder;
+		return header.isFortranOrder();
 	}
 	
 	public Endian getEndian() {
-		return header.endian;
+		return header.getEndian();
 	}
 	
 	public DataType getDataType() {
-		return header.dataType;
+		return header.getDataType();
 	}
 	
 	public float[] floatElements() {
