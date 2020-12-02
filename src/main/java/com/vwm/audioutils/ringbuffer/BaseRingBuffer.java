@@ -1,5 +1,6 @@
 package com.vwm.audioutils.ringbuffer;
 
+import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -12,6 +13,7 @@ public abstract class BaseRingBuffer {
 
     /**
      * fill the buffer from beginning
+     *
      * @param length buffer size
      * @return RingBufferType1
      */
@@ -21,6 +23,7 @@ public abstract class BaseRingBuffer {
 
     /**
      * fill the buffer from end
+     *
      * @param length buffer size
      * @return RingBufferType2
      */
@@ -34,6 +37,7 @@ public abstract class BaseRingBuffer {
 
     /**
      * write a segment to buffer
+     *
      * @param slice slice of data
      * @return true if success
      */
@@ -41,8 +45,20 @@ public abstract class BaseRingBuffer {
 
     /**
      * get the whole buffer
+     *
      * @return buffer
      */
     public abstract float[] get();
 
+    /**
+     * clear the buffer
+     */
+    public void clear() {
+        lock.writeLock().lock();
+        try {
+            Arrays.fill(buf, 0);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
 }

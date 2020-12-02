@@ -15,7 +15,7 @@ import java.io.IOException;
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class AudioWriter {
-    private  String TAG;
+    private final String TAG;
     private static final int MAX_WAV_FILES = 100;
     private final int sr;
 
@@ -125,7 +125,7 @@ public class AudioWriter {
             totalAudioLen = in.getChannel().size();
             //由于不包括RIFF和WAV
             totalDataLen = totalAudioLen + 36;
-            writeWaveFileHeader(out, totalAudioLen, totalDataLen, (long) sr, channels, byteRate);
+            writeWaveFileHeader(out, totalAudioLen, totalDataLen, sr, channels, byteRate);
             while (in.read(data) != -1) {
                 out.write(data);
             }
@@ -187,7 +187,7 @@ public class AudioWriter {
         header[30] = (byte) ((byteRate >> 16) & 0xff);
         header[31] = (byte) ((byteRate >> 24) & 0xff);
         // 确定系统一次要处理多少个这样字节的数据，确定缓冲区，通道数*采样位数
-        header[32] = (byte) (1 * 16 / 8);
+        header[32] = (byte) (16 / 8);
         header[33] = 0;
         //每个样本的数据位数
         header[34] = 16;

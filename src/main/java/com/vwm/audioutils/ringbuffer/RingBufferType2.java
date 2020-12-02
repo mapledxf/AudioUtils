@@ -6,7 +6,7 @@ package com.vwm.audioutils.ringbuffer;
  */
 class RingBufferType2 extends BaseRingBuffer {
     private int recordingOffset = 0;
-    private float[] inputBuffer;
+    private final float[] inputBuffer;
 
     public RingBufferType2(int length) {
         super(length);//构造函数定义缓冲区的大小

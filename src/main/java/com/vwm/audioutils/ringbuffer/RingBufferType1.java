@@ -2,6 +2,8 @@ package com.vwm.audioutils.ringbuffer;
 
 import android.util.Log;
 
+import java.util.Arrays;
+
 /**
  * @author Xuefeng Ding
  * Created 2020-02-17 23:49
@@ -19,6 +21,7 @@ class RingBufferType1 extends BaseRingBuffer {
 
     /**
      * write a segment to buffer
+     *
      * @param slice slice of data
      * @return true if success
      */
@@ -50,6 +53,7 @@ class RingBufferType1 extends BaseRingBuffer {
 
     /**
      * get the whole buffer
+     *
      * @return buffer
      */
     @Override

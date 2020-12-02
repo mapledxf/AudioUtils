@@ -11,9 +11,9 @@ import java.io.RandomAccessFile;
  */
 public class WavReader {
 	private static final String TAG = "WavReader";
-	private File file;
-	private byte[] header;
-	private short[] samples;
+	private final File file;
+	private final byte[] header;
+	private final short[] samples;
 	//this is the absolute value maximum so it considers the most negative sample aswell
 	private int maxAbsoluteSample;
 
